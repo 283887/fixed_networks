@@ -1,0 +1,48 @@
+#!/usr/bin/expect -f
+
+set ip [lindex $argv 0]
+set file [lindex $argv 1]
+
+log_user 0
+log_file -a $file
+
+set timeout 30
+
+puts "connecting to ISAM"
+spawn ssh isadmin@$ip
+
+expect { 
+	"yes/no" { send "yes\r"; exp_continue } ;
+	"password:" { send "ANS#150\r" } ;
+	"ssh" { exit 88 } ;
+}
+
+puts "RUNNING COMMANDS"
+puts "1/5"
+expect ">"
+send "info configure service\r"
+
+puts "2/5"
+expect ">"
+send "info configure router\r"
+
+puts "3/5"
+expect ">"
+send "show service id 4093 all\r"
+
+puts "4/5"
+expect ">"
+send "show service sap-using\r"
+
+puts "5/5"
+expect ">"
+send "show port nt-a:xfp:1\r"
+
+puts "LOGGING OUT"
+expect ">"
+send "logout\r"
+
+puts "output saved to $file"
+
+expect eof
+
